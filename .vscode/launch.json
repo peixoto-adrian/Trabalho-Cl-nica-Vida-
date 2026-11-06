@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "msedge",
+      "request": "launch",
+      "name": "Abrir Clínica Vida+ no Edge",
+      "file": "${workspaceFolder}/index.html"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Abrir Clínica Vida+ no Chrome",
+      "file": "${workspaceFolder}/index.html"
+    }
+  ]
+}
