@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clínica Vida+ | Sistema Integrado de Gestão</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --secondary: #0f172a;
+      --accent: #10b981;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #334155;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.6; }
+
+    /* Layout & Sidebar */
+    .app-container { display: flex; min-height: 100vh; }
+    sidebar { width: 260px; background-color: var(--secondary); color: white; padding: 2rem 1rem; position: fixed; height: 100vh; overflow-y: auto; }
+    sidebar h1 { font-size: 1.4rem; color: #38bdf8; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem; }
+    nav ul { list-style: none; }
+    nav li { margin-bottom: 0.5rem; }
+    nav a { color: #94a3b8; text-decoration: none; padding: 0.75rem 1rem; display: block; border-radius: 8px; transition: all 0.3s; font-weight: 500; }
+    nav a:hover, nav a.active { background-color: var(--primary); color: white; }
+
+    main { margin-left: 260px; flex: 1; padding: 2.5rem; max-width: 1200px; }
+    section { background: var(--surface); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 2.5rem; border: 1px solid var(--border); }
+    h2 { color: var(--secondary); margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+    
+    /* Capa */
+    .hero { background: linear-gradient(135deg, var(--secondary), var(--primary-dark)); color: white; padding: 3rem; border-radius: 12px; margin-bottom: 2rem; text-align: center; }
+    .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; color: #38bdf8; }
+    .hero-meta { display: flex; justify-content: center; gap: 2rem; margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.9; }
+
+    /* Controls & Buttons */
+    .btn { background: var(--primary); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: background 0.2s; text-decoration: none; }
+    .btn:hover { background: var(--primary-dark); }
+    .btn-accent { background: var(--accent); }
+    .btn-accent:hover { background: #059669; }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: #dc2626; }
+    .toolbar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+
+    /* Kanban Board Interativo */
+    .kanban-controls { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .kanban-controls input, .kanban-controls select { padding: 0.5rem; border: 1px solid var(--border); border-radius: 6px; }
+    .kanban-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .kanban-column { background: #f1f5f9; padding: 1rem; border-radius: 8px; min-height: 320px; }
+    .kanban-column h3 { font-size: 1rem; margin-bottom: 1rem; color: var(--secondary); text-align: center; border-bottom: 2px solid var(--border); padding-bottom: 0.4rem; }
+    .kanban-card { background: white; padding: 0.8rem; border-radius: 6px; margin-bottom: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid var(--primary); }
+    .kanban-card h4 { font-size: 0.9rem; margin-bottom: 0.3rem; color: var(--secondary); }
+    .kanban-card p { font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem; }
+    .card-actions { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; }
+    .card-actions select { padding: 0.2rem; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border); }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.88rem; }
+    th, td { border: 1px solid var(--border); padding: 0.65rem; text-align: center; }
+    th { background-color: #f8fafc; color: var(--secondary); font-weight: 600; }
+    tr:nth-child(even) { background-color: #f8fafc; }
+    .val-v { background-color: #dcfce7; color: #166534; font-weight: bold; }
+    .val-f { background-color: #fee2e2; color: #991b1b; }
+
+    /* Console & Form Interativo */
+    .system-console { background: #0f172a; color: #38bdf8; padding: 1.2rem; border-radius: 8px; font-family: 'Courier New', Courier, monospace; margin-bottom: 1.2rem; min-height: 80px; font-size: 0.9rem; line-height: 1.5; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .form-group label { font-size: 0.85rem; font-weight: 600; }
+    .form-group input { padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+
+    /* Fila FIFO */
+    .fifo-container { display: flex; gap: 1rem; align-items: center; margin: 1.5rem 0; background: #f1f5f9; padding: 1.5rem; border-radius: 8px; overflow-x: auto; }
+    .fifo-item { background: white; border: 2px solid var(--primary); padding: 1rem; border-radius: 8px; min-width: 150px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .fifo-arrow { font-size: 1.5rem; color: var(--primary); font-weight: bold; }
+
+    /* UML Diagram Container */
+    .uml-box { border: 2px dashed var(--border); padding: 1.5rem; border-radius: 8px; text-align: center; background: #fafafa; }
+
+    /* Print styling */
+    @media print {
+      sidebar, .toolbar, .no-print, .kanban-controls { display: none !important; }
+      main { margin-left: 0; padding: 0; }
+      section { box-shadow: none; border: none; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Sidebar / Navegação -->
+    <sidebar>
+      <h1>🏥 Clínica Vida+</h1>
+      <nav>
+        <ul>
+          <li><a href="#capa" class="active">Capa & Apresentação</a></li>
+          <li><a href="#passo1">Passo 1: Quadro Ágil</a></li>
+          <li><a href="#passo2">Passo 2: Gestão de Pacientes</a></li>
+          <li><a href="#passo3">Passo 3: Tabelas-Verdade</a></li>
+          <li><a href="#passo4">Passo 4: Fila FIFO</a></li>
+          <li><a href="#passo5">Passo 5: Diagrama UML</a></li>
+          <li><a href="#conclusao">Conclusão & Referências</a></li>
+        </ul>
+      </nav>
+    </sidebar>
+
+    <!-- Conteúdo Principal -->
+    <main>
+      <!-- Ações Globais -->
+      <div class="toolbar no-print">
+        <button class="btn" onclick="window.print()">🖨️ Imprimir / Exportar PDF do Relatório</button>
+      </div>
+
+      <!-- CAPA -->
+      <section id="capa">
+        <div class="hero">
+          <h1>SISTEMA CLÍNICA VIDA+</h1>
+          <p>Projeto Integrador Multidisciplinar de Análise e Engenharia de Software</p>
+          <div class="hero-meta">
+            <span><strong>Curso:</strong> Análise e Desenvolvimento de Sistemas</span>
+            <span><strong>Disciplina:</strong> Introdução à Programação</span>
+            <span><strong>Plataforma:</strong> Aplicação Web Autônoma (Sem Dependências)</span>
+          </div>
+        </div>
+
+        <h2>Introdução & Objetivos</h2>
+        <p>O projeto <strong>Clínica Vida+</strong> é uma solução acadêmica para organização de processos operacionais e lógicos de uma clínica médica. A aplicação integra planejamento ágil, cadastro com tratamento de exceções, validação matemática de consultas, estruturas de dados para recepção e modelagem estrutural UML.</p>
+        <br>
+        <p><strong>Objetivos do Projeto:</strong></p>
+        <ul>
+          <li><strong>Passo 1:</strong> Mapear e gerenciar a execução do projeto via Metodologia Ágil (Kanban e Relatório de Sprint).</li>
+          <li><strong>Passo 2:</strong> Disponibilizar um módulo interativo para cadastro, busca e estatísticas de pacientes com tratamento de entradas.</li>
+          <li><strong>Passo 3:</strong> Validar matematicamente a liberação de consultas usando Tabelas-Verdade de Lógica Proposicional.</li>
+          <li><strong>Passo 4:</strong> Demonstrar o processamento sequencial da Fila de Atendimento usando a política FIFO (<em>First-In, First-Out</em>).</li>
+          <li><strong>Passo 5:</strong> Modelar as interações entre Secretária, Médico e Sistema com Diagrama de Casos de Uso UML.</li>
+        </ul>
+      </section>
+
+      <!-- PASSO 1 -->
+      <section id="passo1">
+        <h2>Passo 1: Gestão Ágil e Quadro Kanban</h2>
+        <p>Abaixo está o quadro de gestão de tarefas do projeto. Você pode adicionar novas tarefas e alterar seus status em tempo real.</p>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;"><em>Nota: Para criar este quadro no Trello oficial, acesse trello.com, crie um novo quadro chamado "Clínica Vida+" e configure as 4 colunas abaixo.</em></p>
+        
+        <!-- Formulário Adicionar Tarefa -->
+        <div class="kanban-controls no-print">
+          <input type="text" id="newTaskTitle" placeholder="Título da tarefa..." style="flex: 2;">
+          <input type="text" id="newTaskDesc" placeholder="Descrição rápida..." style="flex: 3;">
+          <select id="newTaskColumn">
+            <option value="backlog">Backlog</option>
+            <option value="sprint">Sprint Atual</option>
+            <option value="progress">Em Progresso</option>
+            <option value="done">Concluído</option>
+          </select>
+          <button class="btn btn-accent" onclick="addKanbanTask()">+ Adicionar Tarefa</button>
+        </div>
+
+        <!-- Colunas Kanban -->
+        <div class="kanban-board">
+          <div class="kanban-column" id="col-backlog">
+            <h3>Backlog</h3>
+            <div class="cards-container"></div>
+          </div>
+          <div class="kanban-column" id="col-sprint">
+            <h3>Sprint Atual</h3>
+            <div class="cards-container"></div>
+          </div>
+          <div class="kanban-column" id="col-progress">
+            <h3>Em Progresso</h3>
+            <div class="cards-container"></div>
+          </div>
+          <div class="kanban-column" id="col-done">
+            <h3>Concluído</h3>
+            <div class="cards-container"></div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 2rem;">Relatório de Encerramento da Sprint 1</h3>
+        <table>
+          <tr><th>Métrica / Tópico</th><th>Detalhamento</th></tr>
+          <tr><td><strong>Objetivo da Sprint</strong></td><td>Concluir toda a modelagem lógica, estrutural e prototipagem do software principal.</td></tr>
+          <tr><td><strong>Resultados Alcançados</strong></td><td>100% das tarefas da Sprint 1 concluídas com sucesso e validadas.</td></tr>
+          <tr><td><strong>Desafios Encontrados</strong></td><td>Garantir que as regras condicionais das consultas atendessem a todos os cenários lógicos sem ambiguidade.</td></tr>
+          <tr><td><strong>Pontos Positivos</strong></td><td>Interface rápida, leve e autoexecutável diretamente no navegador.</td></tr>
+          <tr><td><strong>Ações de Melhoria</strong></td><td>Preparar migração da base local para armazenamento em nuvem na próxima sprint.</td></tr>
+        </table>
+      </section>
+
+      <!-- PASSO 2 -->
+      <section id="passo2">
+        <h2>Passo 2: Módulo de Cadastro, Busca e Estatísticas</h2>
+        <p>Gerenciamento da base de dados dos pacientes da clínica com cálculo automático de estatísticas e validação de erros.</p>
+        
+        <div class="system-console" id="sysConsole">
+          > Sistema Clínica Vida+ Inicializado.<br>
+          > Base inicial carregada: 3 pacientes cadastrados.
+        </div>
+
+        <div class="form-grid no-print">
+          <div class="form-group">
+            <label for="pNome">Nome Completo:</label>
+            <input type="text" id="pNome" placeholder="Ex: Maria Souza">
+          </div>
+          <div class="form-group">
+            <label for="pIdade">Idade:</label>
+            <input type="number" id="pIdade" placeholder="Ex: 34" min="0">
+          </div>
+          <div class="form-group">
+            <label for="pTel">Telefone:</label>
+            <input type="text" id="pTel" placeholder="Ex: (41) 99999-8888">
+          </div>
+        </div>
+
+        <div class="toolbar no-print">
+          <button class="btn btn-accent" onclick="cadastrarPaciente()">1. Cadastrar Paciente</button>
+          <button class="btn" onclick="verEstatisticas()">2. Ver Estatísticas</button>
+          <button class="btn" onclick="buscarPaciente()">3. Buscar por Nome</button>
+          <button class="btn" onclick="renderTabelaPacientes()">4. Listar Todos</button>
+        </div>
+
+        <h3>Lista Geral de Pacientes Cadastrados</h3>
+        <table id="tabelaPacientes">
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>Nome Completo</th>
+              <th>Idade</th>
+              <th>Telefone</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Preenchido via JavaScript -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- PASSO 3 -->
+      <section id="passo3">
+        <h2>Passo 3: Lógica Proposicional e Tabelas-Verdade</h2>
+        <p>Validação de regras operacionais de atendimento. <strong>Variáveis:</strong> A (Agendamento), B (Documentos Válidos), C (Médico Disponível), D (Pagamentos em Dia).</p>
+        
+        <h3>1. Consulta Normal: (A ∧ B ∧ C) ∨ (B ∧ C ∧ D)</h3>
+        <p><strong>Total de Liberações:</strong> 3 de 16 combinações possíveis.</p>
+        <table>
+          <thead>
+            <tr><th>Linha</th><th>A</th><th>B</th><th>C</th><th>D</th><th>(A ∧ B ∧ C)</th><th>(B ∧ C ∧ D)</th><th>Resultado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>V</td><td>V</td><td>V</td><td>V</td><td>V</td><td>V</td><td class="val-v">V (Liberado)</td></tr>
+            <tr><td>2</td><td>V</td><td>V</td><td>V</td><td>F</td><td>V</td><td>F</td><td class="val-v">V (Liberado)</td></tr>
+            <tr><td>3</td><td>V</td><td>V</td><td>F</td><td>V</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>4</td><td>V</td><td>V</td><td>F</td><td>F</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>5</td><td>V</td><td>F</td><td>V</td><td>V</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>6</td><td>V</td><td>F</td><td>V</td><td>F</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>7</td><td>V</td><td>F</td><td>F</td><td>V</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>8</td><td>V</td><td>F</td><td>F</td><td>F</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>9</td><td>F</td><td>V</td><td>V</td><td>V</td><td>F</td><td>V</td><td class="val-v">V (Liberado)</td></tr>
+            <tr><td>10</td><td>F</td><td>V</td><td>V</td><td>F</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>11</td><td>F</td><td>V</td><td>F</td><td>V</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>12</td><td>F</td><td>V</td><td>F</td><td>F</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>13</td><td>F</td><td>F</td><td>V</td><td>V</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>14</td><td>F</td><td>F</td><td>V</td><td>F</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>15</td><td>F</td><td>F</td><td>F</td><td>V</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>16</td><td>F</td><td>F</td><td>F</td><td>F</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin-top:2rem;">2. Emergência: C ∧ (B ∨ D)</h3>
+        <p><strong>Total de Liberações:</strong> 6 de 16 combinações possíveis.</p>
+        <table>
+          <thead>
+            <tr><th>Linha</th><th>A</th><th>B</th><th>C</th><th>D</th><th>(B ∨ D)</th><th>Resultado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>V</td><td>V</td><td>V</td><td>V</td><td>V</td><td class="val-v">V (Liberado)</td></tr>
+            <tr><td>2</td><td>V</td><td>V</td><td>V</td><td>F</td><td>V</td><td class="val-v">V (Liberado)</td></tr>
+            <tr><td>3</td><td>V</td><td>V</td><td>F</td><td>V</td><td>V</td><td class="val-f">F</td></tr>
+            <tr><td>4</td><td>V</td><td>V</td><td>F</td><td>F</td><td>V</td><td class="val-f">F</td></tr>
+            <tr><td>5</td><td>V</td><td>F</td><td>V</td><td>V</td><td>V</td><td class="val-v">V (Liberado)</td></tr>
+            <tr><td>6</td><td>V</td><td>F</td><td>V</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>7</td><td>V</td><td>F</td><td>F</td><td>V</td><td>V</td><td class="val-f">F</td></tr>
+            <tr><td>8</td><td>V</td><td>F</td><td>F</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>9</td><td>F</td><td>V</td><td>V</td><td>V</td><td>V</td><td class="val-v">V (Liberado)</td></tr>
+            <tr><td>10</td><td>F</td><td>V</td><td>V</td><td>F</td><td>V</td><td class="val-v">V (Liberado)</td></tr>
+            <tr><td>11</td><td>F</td><td>V</td><td>F</td><td>V</td><td>V</td><td class="val-f">F</td></tr>
+            <tr><td>12</td><td>F</td><td>V</td><td>F</td><td>F</td><td>V</td><td class="val-f">F</td></tr>
+            <tr><td>13</td><td>F</td><td>F</td><td>V</td><td>V</td><td>V</td><td class="val-v">V (Liberado)</td></tr>
+            <tr><td>14</td><td>F</td><td>F</td><td>V</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+            <tr><td>15</td><td>F</td><td>F</td><td>F</td><td>V</td><td>V</td><td class="val-f">F</td></tr>
+            <tr><td>16</td><td>F</td><td>F</td><td>F</td><td>F</td><td>F</td><td class="val-f">F</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin-top:1.5rem;">Análise do Cenário (A=F, B=V, C=V, D=F):</h3>
+        <ul style="margin-left: 1.5rem;">
+          <li><strong>Consulta Normal:</strong> Resultado <strong>FALSO (Atendimento Negado)</strong>. Sem agendamento (A=F), exigia-se pagamento em dia (D=V). Como D=F, a expressão retorna Falso.</li>
+          <li><strong>Emergência:</strong> Resultado <strong>VERDADEIRO (Atendimento Liberado)</strong>. Na emergência o agendamento é irrelevante. Com médico disponível (C=V) e documento válido (B=V), a liberação é imediata.</li>
+        </ul>
+      </section>
+
+      <!-- PASSO 4 -->
+      <section id="passo4">
+        <h2>Passo 4: Algoritmo e Estrutura de Dados (Fila FIFO)</h2>
+        <p>Abaixo está o pseudocódigo e o simulador funcional da ordem de atendimento First-In, First-Out (FIFO).</p>
+        
+        <h3>Simulação Interativa da Fila</h3>
+        <div class="fifo-container" id="fifoVisual">
+          <!-- Preenchido via JavaScript -->
+        </div>
+        <button class="btn no-print" onclick="atenderPacienteFila()">Chamar Próximo Paciente (Remover da Fila)</button>
+
+        <h3 style="margin-top: 1.5rem;">Pseudocódigo Estruturado</h3>
+        <pre style="background: #0f172a; color: #f8fafc; padding: 1rem; border-radius: 8px; font-size: 0.85rem; overflow-x: auto;"><code>Algoritmo FilaAtendimentoClinica
+    Tipo Paciente = Registro
+        nome : Texto
+        cpf  : Texto
+    FimRegistro
+
+    Var
+        fila : Vetor[1..3] de Paciente
+Inicio
+    // Inserção na Fila
+    fila[1] <- ("João Santos", "111.222.333-44")
+    fila[2] <- ("Maria Oliveira", "555.666.777-88")
+    fila[3] <- ("Pedro Henrique", "999.000.111-22")
+
+    // Remoção do 1º Paciente (Atendimento)
+    Escreval("Atendendo agora: ", fila[1].nome)
+
+    // Reorganização (Shift)
+    fila[1] <- fila[2]
+    fila[2] <- fila[3]
+
+    // Exibição dos restantes
+    Escreval("Aguardando 1º: ", fila[1].nome)
+    Escreval("Aguardando 2º: ", fila[2].nome)
+FimAlgoritmo</code></pre>
+      </section>
+
+      <!-- PASSO 5 -->
+      <section id="passo5">
+        <h2>Passo 5: Diagrama de Casos de Uso UML</h2>
+        <p>Diagrama visual mapeando os atores <strong>Secretária</strong> e <strong>Médico</strong>, limites do sistema e inclusões obrigatórias (<code>&lt;&lt;include&gt;&gt;</code>).</p>
+        
+        <div class="uml-box">
+          <svg width="100%" height="320" viewBox="0 0 800 320" style="max-width: 800px;">
+            <!-- Fronteira do Sistema -->
+            <rect x="180" y="10" width="440" height="300" fill="#ffffff" stroke="#0284c7" stroke-width="2" rx="8"/>
+            <text x="400" y="35" text-anchor="middle" font-weight="bold" fill="#0284c7">SISTEMA CLÍNICA VIDA+</text>
+
+            <!-- Atores -->
+            <!-- Secretária -->
+            <circle cx="80" cy="120" r="15" fill="#0f172a"/>
+            <line x1="80" y1="135" x2="80" y2="180" stroke="#0f172a" stroke-width="3"/>
+            <line x1="60" y1="150" x2="100" y2="150" stroke="#0f172a" stroke-width="3"/>
+            <line x1="80" y1="180" x2="65" y2="220" stroke="#0f172a" stroke-width="3"/>
+            <line x1="80" y1="180" x2="95" y2="220" stroke="#0f172a" stroke-width="3"/>
+            <text x="80" y="240" text-anchor="middle" font-weight="bold">Secretária</text>
+
+            <!-- Médico -->
+            <circle cx="720" cy="120" r="15" fill="#0f172a"/>
+            <line x1="720" y1="135" x2="720" y2="180" stroke="#0f172a" stroke-width="3"/>
+            <line x1="700" y1="150" x2="740" y2="150" stroke="#0f172a" stroke-width="3"/>
+            <line x1="720" y1="180" x2="705" y2="220" stroke="#0f172a" stroke-width="3"/>
+            <line x1="720" y1="180" x2="735" y2="220" stroke="#0f172a" stroke-width="3"/>
+            <text x="720" y="240" text-anchor="middle" font-weight="bold">Médico</text>
+
+            <!-- Casos de Uso -->
+            <ellipse cx="280" cy="70" rx="75" ry="20" fill="#e0f2fe" stroke="#0284c7"/>
+            <text x="280" y="74" text-anchor="middle" font-size="12">Cadastrar Paciente</text>
+
+            <ellipse cx="280" cy="130" rx="75" ry="20" fill="#e0f2fe" stroke="#0284c7"/>
+            <text x="280" y="134" text-anchor="middle" font-size="12">Agendar Consulta</text>
+
+            <ellipse cx="280" cy="190" rx="75" ry="20" fill="#e0f2fe" stroke="#0284c7"/>
+            <text x="280" y="194" text-anchor="middle" font-size="12">Confirmar Consulta</text>
+
+            <ellipse cx="400" cy="260" rx="75" ry="20" fill="#e0f2fe" stroke="#0284c7"/>
+            <text x="400" y="264" text-anchor="middle" font-size="12">Cancelar Consulta</text>
+
+            <ellipse cx="520" cy="130" rx="75" ry="20" fill="#e0f2fe" stroke="#0284c7"/>
+            <text x="520" y="134" text-anchor="middle" font-size="12">Gerar Receita</text>
+
+            <ellipse cx="520" cy="190" rx="75" ry="20" fill="#e0f2fe" stroke="#0284c7"/>
+            <text x="520" y="194" text-anchor="middle" font-size="12">Imprimir Receita</text>
+
+            <!-- Relacionamentos de Atores -->
+            <line x1="105" y1="150" x2="205" y2="70" stroke="#64748b" stroke-width="1.5"/>
+            <line x1="105" y1="150" x2="205" y2="130" stroke="#64748b" stroke-width="1.5"/>
+            <line x1="105" y1="150" x2="205" y2="190" stroke="#64748b" stroke-width="1.5"/>
+            <line x1="105" y1="150" x2="325" y2="260" stroke="#64748b" stroke-width="1.5"/>
+
+            <line x1="695" y1="150" x2="475" y2="260" stroke="#64748b" stroke-width="1.5"/>
+            <line x1="695" y1="150" x2="595" y2="130" stroke="#64748b" stroke-width="1.5"/>
+
+            <!-- Dependências <<include>> -->
+            <line x1="520" y1="150" x2="520" y2="170" stroke="#10b981" stroke-width="2" stroke-dasharray="4"/>
+            <text x="525" y="165" font-size="10" fill="#10b981">&lt;&lt;include&gt;&gt;</text>
+          </svg>
+        </div>
+      </section>
+
+      <!-- CONCLUSÃO & REFERÊNCIAS -->
+      <section id="conclusao">
+        <h2>Conclusão & Referências</h2>
+        <p>A aplicação <strong>Clínica Vida+</strong> consolida os fundamentos da ciência da computação ao apresentar gestão ágil, rigor na validação booleana, segurança nas estruturas de atendimento e legibilidade na modelagem de software.</p>
+        
+        <h3 style="margin-top: 1.5rem;">Referências Bibliográficas</h3>
+        <ol style="margin-left: 1.5rem; margin-top: 0.5rem;">
+          <li>ELMASRI, Ramez; NAVATHE, Shamkant B. <em>Sistemas de Banco de Dados</em>. 7. ed. São Paulo: Pearson, 2018.</li>
+          <li>PRESSMAN, Roger S.; MAXIM, Bruce R. <em>Engenharia de Software: Uma Abordagem Profissional</em>. 8. ed. Porto Alegre: AMGH, 2016.</li>
+          <li>SOMMERVILLE, Ian. <em>Engenharia de Software</em>. 10. ed. São Paulo: Pearson Education do Brasil, 2019.</li>
+        </ol>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Kanban Tasks Data
+    let kanbanTasks = [
+      { id: 1, title: 'Levantamento de Requisitos', desc: 'Mapeamento de atores e regras.', col: 'done' },
+      { id: 2, title: 'Estrutura FIFO', desc: 'Algoritmo de fila de atendimento.', col: 'done' },
+      { id: 3, title: 'Módulo de Pacientes', desc: 'Validação e estatísticas.', col: 'progress' },
+      { id: 4, title: 'Tabelas-Verdade', desc: 'Revisão das 16 combinações.', col: 'sprint' },
+      { id: 5, title: 'Modelagem UML', desc: 'Diagrama e includes.', col: 'sprint' },
+      { id: 6, title: 'Módulo Financeiro', desc: 'Integração de pagamentos.', col: 'backlog' }
+    ];
+
+    function renderKanban() {
+      const cols = ['backlog', 'sprint', 'progress', 'done'];
+      cols.forEach(c => {
+        document.querySelector(`#col-${c} .cards-container`).innerHTML = '';
+      });
+
+      kanbanTasks.forEach(task => {
+        const container = document.querySelector(`#col-${task.col} .cards-container`);
+        if (container) {
+          container.innerHTML += `
+            <div class="kanban-card">
+              <h4>${task.title}</h4>
+              <p>${task.desc}</p>
+              <div class="card-actions">
+                <select onchange="moveKanbanTask(${task.id}, this.value)">
+                  <option value="backlog" ${task.col==='backlog'?'selected':''}>Backlog</option>
+                  <option value="sprint" ${task.col==='sprint'?'selected':''}>Sprint</option>
+                  <option value="progress" ${task.col==='progress'?'selected':''}>Em Progresso</option>
+                  <option value="done" ${task.col==='done'?'selected':''}>Concluído</option>
+                </select>
+                <button class="btn btn-danger" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;" onclick="deleteKanbanTask(${task.id})">✕</button>
+              </div>
+            </div>
+          `;
+        }
+      });
+    }
+
+    function addKanbanTask() {
+      const title = document.getElementById('newTaskTitle').value.trim();
+      const desc = document.getElementById('newTaskDesc').value.trim();
+      const col = document.getElementById('newTaskColumn').value;
+
+      if (!title) return alert('Digite ao menos o título da tarefa.');
+
+      kanbanTasks.push({ id: Date.now(), title, desc, col });
+      document.getElementById('newTaskTitle').value = '';
+      document.getElementById('newTaskDesc').value = '';
+      renderKanban();
+    }
+
+    function moveKanbanTask(id, newCol) {
+      const task = kanbanTasks.find(t => t.id === id);
+      if (task) {
+        task.col = newCol;
+        renderKanban();
+      }
+    }
+
+    function deleteKanbanTask(id) {
+      kanbanTasks = kanbanTasks.filter(t => t.id !== id);
+      renderKanban();
+    }
+
+    // Base de Pacientes (Passo 2)
+    let pacientes = [
+      { nome: "Ana Silva", idade: 28, telefone: "(11) 98765-4321" },
+      { nome: "Carlos Eduardo", idade: 65, telefone: "(21) 99123-4567" },
+      { nome: "Beatriz Souza", idade: 12, telefone: "(31) 97777-8888" }
+    ];
+
+    function logConsole(msg) {
+      document.getElementById('sysConsole').innerHTML = `> ${msg}`;
+    }
+
+    function renderTabelaPacientes(lista = pacientes) {
+      const tbody = document.querySelector('#tabelaPacientes tbody');
+      tbody.innerHTML = '';
+      if (lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">Nenhum paciente encontrado.</td></tr>';
+        return;
+      }
+      lista.forEach((p, i) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${p.nome}</td>
+            <td>${p.idade} anos</td>
+            <td>${p.telefone}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function cadastrarPaciente() {
+      const nomeInput = document.getElementById('pNome');
+      const idadeInput = document.getElementById('pIdade');
+      const telInput = document.getElementById('pTel');
+
+      const nome = nomeInput.value.trim();
+      const idade = parseInt(idadeInput.value);
+      const tel = telInput.value.trim();
+
+      if (!nome || isNaN(idade) || idade < 0 || !tel) {
+        logConsole('[ERRO] Preencha todos os campos corretamente! A idade deve ser um número maior ou igual a zero.');
+        return;
+      }
+
+      pacientes.push({ nome, idade, telefone: tel });
+      renderTabelaPacientes();
+      logConsole(`[SUCESSO] Paciente '${nome}' cadastrado com sucesso!`);
+
+      nomeInput.value = '';
+      idadeInput.value = '';
+      telInput.value = '';
+    }
+
+    function verEstatisticas() {
+      if (pacientes.length === 0) {
+        logConsole('[AVISO] Nenhum paciente cadastrado.');
+        return;
+      }
+
+      const total = pacientes.length;
+      const somaIdades = pacientes.reduce((acc, p) => acc + p.idade, 0);
+      const media = (somaIdades / total).toFixed(2);
+
+      let maisNovo = pacientes[0];
+      let maisVelho = pacientes[0];
+
+      pacientes.forEach(p => {
+        if (p.idade < maisNovo.idade) maisNovo = p;
+        if (p.idade > maisVelho.idade) maisVelho = p;
+      });
+
+      logConsole(`ESTATÍSTICAS: Total: ${total} | Idade Média: ${media} anos | Mais Novo: ${maisNovo.nome} (${maisNovo.idade}a) | Mais Velho: ${maisVelho.nome} (${maisVelho.idade}a)`);
+    }
+
+    function buscarPaciente() {
+      const termo = prompt("Digite o nome do paciente para buscar:");
+      if (!termo) return;
+
+      const resultados = pacientes.filter(p => p.nome.toLowerCase().includes(termo.toLowerCase()));
+      renderTabelaPacientes(resultados);
+      logConsole(`Busca por '${termo}': ${resultados.length} paciente(s) encontrado(s).`);
+    }
+
+    // Fila FIFO (Passo 4)
+    let pacientesFila = [
+      { nome: "João Santos", cpf: "111.222.333-44" },
+      { nome: "Maria Oliveira", cpf: "555.666.777-88" },
+      { nome: "Pedro Henrique", cpf: "999.000.111-22" }
+    ];
+
+    function atenderPacienteFila() {
+      if (pacientesFila.length > 0) {
+        const atendido = pacientesFila.shift();
+        alert('Atendendo agora: ' + atendido.nome + ' (CPF: ' + atendido.cpf + ')');
+        renderFila();
+      } else {
+        alert('A fila está vazia!');
+      }
+    }
+
+    function renderFila() {
+      const container = document.getElementById('fifoVisual');
+      if (pacientesFila.length === 0) {
+        container.innerHTML = '<em>A fila de espera está vazia.</em>';
+        return;
+      }
+      
+      let html = '';
+      pacientesFila.forEach((p, idx) => {
+        html += `<div class="fifo-item"><strong>${idx + 1}. ${p.nome}</strong><br><small>CPF: ${p.cpf}</small></div>`;
+        if (idx < pacientesFila.length - 1) {
+          html += `<div class="fifo-arrow">➔</div>`;
+        }
+      });
+      container.innerHTML = html;
+    }
+
+    // Inicialização
+    window.onload = function() {
+      renderKanban();
+      renderTabelaPacientes();
+      renderFila();
+    };
+  </script>
+</body>
+</html>
